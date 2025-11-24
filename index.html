@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISTU v2.0 - AI Study Companion</title>
+    <title>ISTU v3.0 - Global AI Study Companion</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -19,18 +19,16 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
         [x-cloak] { display: none !important; }
-        
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Flip Animation */
+        /* Flip Card Styles */
         .card-wrap { perspective: 1000px; width: 100%; height: 350px; cursor: pointer; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .flipped .card-inner { transform: rotateY(180deg); }
-        .face { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; }
+        .face { position: absolute; inset: 0; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; }
         .front { background: white; border: 1px solid #e2e8f0; }
         .back { background: #eef2ff; color: #4338ca; transform: rotateY(180deg); border: 2px solid #6366f1; }
     </style>
@@ -38,65 +36,71 @@
 
 <body x-data="istuApp" class="min-h-screen flex flex-col">
 
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
                 <div class="font-bold text-2xl text-indigo-600 tracking-tight cursor-pointer flex items-center gap-2" @click="view = 'dashboard'">
-                    <span>🚀 ISTU</span> <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">v2.0</span>
+                    <span>🚀 ISTU</span>
                 </div>
-                <div class="hidden md:flex gap-4 text-sm font-medium">
-                    <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'">Library</button>
-                    <button @click="view = 'schedule'" :class="view === 'schedule' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'">Schedule</button>
+                <div class="hidden md:flex gap-1 text-sm font-medium">
+                    <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'" class="px-3 py-2 rounded-md transition" x-text="t('nav_lib')"></button>
+                    <button @click="view = 'schedule'" :class="view === 'schedule' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'" class="px-3 py-2 rounded-md transition" x-text="t('nav_schedule')"></button>
                 </div>
             </div>
             
             <div class="flex items-center gap-3">
-                <button @click="view = 'create'" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-sm">+ New</button>
-                <button @click="clearData()" class="text-gray-400 hover:text-red-500 p-2" title="Reset All Data">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                <button @click="toggleLang()" class="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-indigo-600 border border-gray-200 px-2 py-1.5 rounded bg-gray-50">
+                    <span x-text="lang === 'en' ? '🇬🇧 EN' : '🇻🇳 VN'"></span>
+                </button>
+
+                <button @click="view = 'create'" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-sm" x-text="t('btn_new')"></button>
+                
+                <button @click="clearData()" class="text-gray-400 hover:text-red-500 p-2 transition" :title="t('reset_tooltip')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8">
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-8">
         
         <div x-show="view === 'dashboard'">
-            <div class="flex justify-between items-end mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Your Library</h1>
-                    <p class="text-sm text-gray-500">Manage decks from Logistics, History, English, and more.</p>
-                </div>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-800" x-text="t('lib_title')"></h1>
+                <p class="text-sm text-gray-500" x-text="t('lib_subtitle')"></p>
             </div>
 
             <div x-show="decks.length === 0" class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
                 <div class="text-4xl mb-4">📂</div>
-                <h3 class="text-lg font-bold text-gray-700">No decks yet</h3>
-                <p class="text-gray-400 mb-6 text-sm">Upload a document or enter a topic to start.</p>
-                <button @click="view = 'create'" class="text-indigo-600 font-bold hover:underline">Create First Deck</button>
+                <h3 class="text-lg font-bold text-gray-700" x-text="t('empty_title')"></h3>
+                <p class="text-gray-400 mb-6 text-sm" x-text="t('empty_desc')"></p>
+                <button @click="view = 'create'" class="text-indigo-600 font-bold hover:underline" x-text="t('empty_btn')"></button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <template x-for="deck in decks" :key="deck.id">
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 hover:border-indigo-400 hover:shadow-md transition relative group">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 hover:border-indigo-400 hover:shadow-lg transition relative group flex flex-col h-56 cursor-pointer" @click="startSession(deck.id)">
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 uppercase" x-text="deck.sourceType || 'Topic'"></span>
-                            <button @click="deleteDeck(deck.id)" class="text-gray-300 hover:text-red-500 transition px-2">🗑️</button>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500 uppercase tracking-wide" x-text="deck.sourceType"></span>
+                            <button @click.stop="deleteDeck(deck.id)" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-1">✕</button>
                         </div>
                         
-                        <h3 class="font-bold text-lg text-gray-800 mb-1 truncate" x-text="deck.topic"></h3>
-                        <p class="text-xs text-gray-400 mb-4" x-text="new Date(deck.createdAt).toLocaleDateString()"></p>
+                        <h3 class="font-bold text-lg text-gray-800 mb-1 line-clamp-2" x-text="deck.topic"></h3>
+                        <p class="text-xs text-gray-400" x-text="new Date(deck.createdAt).toLocaleDateString()"></p>
                         
-                        <div class="flex items-center justify-between mt-auto">
-                            <div class="text-sm">
-                                <span class="font-bold text-gray-700" x-text="deck.cards.length"></span> cards
-                                <span class="mx-1 text-gray-300">|</span>
-                                <span x-show="getDueCount(deck) > 0" class="text-red-500 font-bold" x-text="getDueCount(deck) + ' due'"></span>
-                                <span x-show="getDueCount(deck) === 0" class="text-green-600 font-medium">All done</span>
+                        <div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+                            <div class="text-xs">
+                                <span class="font-bold text-gray-700 block text-lg" x-text="deck.cards.length"></span>
+                                <span class="text-gray-400" x-text="t('card_count')"></span>
                             </div>
-                            <button @click="startSession(deck.id)" class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-100 transition">
-                                Study →
-                            </button>
+                            <div class="text-right">
+                                <div x-show="getDueCount(deck) > 0" class="text-red-500 font-bold text-sm bg-red-50 px-2 py-1 rounded">
+                                    <span x-text="getDueCount(deck)"></span> <span x-text="t('status_due')"></span>
+                                </div>
+                                <div x-show="getDueCount(deck) === 0" class="text-green-600 font-medium text-sm bg-green-50 px-2 py-1 rounded flex items-center gap-1">
+                                    ✓ <span x-text="t('status_done')"></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -104,28 +108,29 @@
         </div>
 
         <div x-show="view === 'schedule'" x-cloak>
-            <h1 class="text-2xl font-bold text-gray-800 mb-6">Study Schedule</h1>
+            <h1 class="text-2xl font-bold text-gray-800 mb-6" x-text="t('schedule_title')"></h1>
             
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                 <div class="bg-indigo-50 p-4 border-b border-indigo-100 flex justify-between items-center">
-                    <h3 class="font-bold text-indigo-900">📅 Due Today</h3>
-                    <span class="text-xs font-bold bg-white text-indigo-600 px-2 py-1 rounded-full" x-text="getAllDueCards().length + ' cards'"></span>
+                    <h3 class="font-bold text-indigo-900" x-text="t('due_today')"></h3>
+                    <span class="text-xs font-bold bg-white text-indigo-600 px-2 py-1 rounded-full border border-indigo-100" x-text="getAllDueCards().length + ' ' + t('card_count')"></span>
                 </div>
 
-                <div x-show="getAllDueCards().length === 0" class="p-8 text-center text-gray-500">
-                    🎉 No cards due for review today. You're all caught up!
+                <div x-show="getAllDueCards().length === 0" class="p-12 text-center text-gray-500">
+                    <div class="text-3xl mb-2">🎉</div>
+                    <span x-text="t('all_caught_up')"></span>
                 </div>
 
-                <ul class="divide-y divide-gray-100">
+                <ul class="divide-y divide-gray-100 max-h-[60vh] overflow-y-auto">
                     <template x-for="item in getAllDueCards()" :key="item.card.id">
-                        <div class="p-4 hover:bg-gray-50 flex justify-between items-center group">
-                            <div>
-                                <p class="font-bold text-gray-800 text-sm" x-text="item.card.front"></p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    from deck: <span class="font-medium text-gray-700" x-text="item.deckTopic"></span>
+                        <div class="p-4 hover:bg-gray-50 flex justify-between items-center group transition">
+                            <div class="pr-4">
+                                <p class="font-semibold text-gray-800 text-sm line-clamp-1" x-text="item.card.front"></p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    <span class="text-gray-400">Deck:</span> <span x-text="item.deckTopic"></span>
                                 </p>
                             </div>
-                            <button @click="startSession(item.deckId)" class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700">Review</button>
+                            <button @click="startSession(item.deckId)" class="text-xs bg-white border border-indigo-200 text-indigo-600 font-bold px-3 py-1.5 rounded hover:bg-indigo-600 hover:text-white transition whitespace-nowrap" x-text="t('btn_review')"></button>
                         </div>
                     </template>
                 </ul>
@@ -133,55 +138,57 @@
         </div>
 
         <div x-show="view === 'create'" x-cloak>
-            <button @click="view = 'dashboard'" class="mb-6 text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1">← Back</button>
+            <button @click="view = 'dashboard'" class="mb-6 text-sm text-gray-500 hover:text-black flex items-center gap-1 transition">
+                ← <span x-text="t('btn_back')"></span>
+            </button>
             
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 max-w-2xl mx-auto">
-                <h2 class="text-2xl font-bold mb-2">Create New Deck</h2>
-                <p class="text-sm text-gray-500 mb-6">Generate flashcards from a topic OR upload a document (PDF/Word/Text).</p>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100 max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold mb-2" x-text="t('create_title')"></h2>
+                <p class="text-sm text-gray-500 mb-6" x-text="t('create_subtitle')"></p>
                 
-                <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <div class="mb-6">
                     <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Gemini API Key</label>
-                    <input x-model="apiKey" type="password" class="w-full bg-white border border-gray-300 rounded p-2 text-sm" placeholder="Enter AIza key here...">
+                    <input x-model="apiKey" type="password" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition" :placeholder="t('api_placeholder')">
                 </div>
 
                 <div class="flex border-b border-gray-200 mb-6">
-                    <button @click="createMode = 'topic'" :class="createMode === 'topic' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500'" class="pb-2 px-4 font-bold border-b-2 transition">By Topic</button>
-                    <button @click="createMode = 'file'" :class="createMode === 'file' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500'" class="pb-2 px-4 font-bold border-b-2 transition">By File Upload</button>
+                    <button @click="createMode = 'topic'" :class="createMode === 'topic' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500'" class="pb-2 px-4 font-bold border-b-2 text-sm transition" x-text="t('tab_topic')"></button>
+                    <button @click="createMode = 'file'" :class="createMode === 'file' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500'" class="pb-2 px-4 font-bold border-b-2 text-sm transition" x-text="t('tab_file')"></button>
                 </div>
 
                 <div x-show="createMode === 'topic'">
-                    <input x-model="inputTopic" type="text" class="w-full p-4 border border-gray-300 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g., Vietnam History 1945, Irregular Verbs...">
+                    <input x-model="inputTopic" type="text" class="w-full p-4 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-800" :placeholder="t('topic_placeholder')">
                 </div>
 
                 <div x-show="createMode === 'file'">
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition cursor-pointer relative">
-                        <input type="file" @change="handleFileSelect" accept=".txt,.md,.pdf,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition cursor-pointer relative group">
+                        <input type="file" @change="handleFileSelect" accept=".txt,.md,.pdf,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div x-show="!selectedFile">
-                            <span class="text-4xl block mb-2">📄</span>
-                            <span class="font-bold text-gray-700 block">Click to Upload Document</span>
-                            <span class="text-xs text-gray-400 block mt-1">Supports: PDF, Word (.docx), Text</span>
+                            <span class="text-4xl block mb-2 opacity-50 group-hover:scale-110 transition">📄</span>
+                            <span class="font-bold text-gray-700 block" x-text="t('upload_label')"></span>
+                            <span class="text-xs text-gray-400 block mt-1">PDF, DOCX, TXT</span>
                         </div>
                         <div x-show="selectedFile">
                             <span class="text-4xl block mb-2 text-green-500">✓</span>
                             <span class="font-bold text-gray-800" x-text="selectedFile ? selectedFile.name : ''"></span>
-                            <span class="block text-xs text-gray-400 mt-1">Ready to analyze</span>
+                            <span class="block text-xs text-gray-400 mt-1" x-text="t('upload_ready')"></span>
                         </div>
                     </div>
                 </div>
 
-                <button @click="handleGenerate()" :disabled="loading" class="w-full mt-6 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed transition flex justify-center items-center gap-2">
+                <button @click="handleGenerate()" :disabled="loading" class="w-full mt-6 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed transition flex justify-center items-center gap-2 shadow-md">
                     <svg x-show="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span x-text="loading ? 'Analyzing & Generating...' : 'Generate Flashcards'"></span>
+                    <span x-text="loading ? t('btn_generating') : t('btn_generate')"></span>
                 </button>
                 
-                <p x-show="statusMsg" x-text="statusMsg" class="text-center text-xs text-indigo-600 mt-3 animate-pulse"></p>
+                <p x-show="statusMsg" x-text="statusMsg" class="text-center text-xs text-indigo-600 mt-3 font-medium animate-pulse"></p>
             </div>
         </div>
 
         <div x-show="view === 'study'" x-cloak class="flex flex-col items-center max-w-lg mx-auto">
-            <div class="w-full flex justify-between items-center mb-8">
-                <button @click="view = 'dashboard'" class="text-gray-400 hover:text-gray-800">✕ Exit</button>
-                <span class="font-mono bg-gray-100 px-3 py-1 rounded text-sm" x-text="(sessionIndex + 1) + ' / ' + sessionCards.length"></span>
+            <div class="w-full flex justify-between items-center mb-6">
+                <button @click="view = 'dashboard'" class="text-gray-400 hover:text-gray-800 transition text-sm">✕ <span x-text="t('btn_exit')"></span></button>
+                <span class="font-mono bg-white border border-gray-200 px-3 py-1 rounded text-xs font-bold text-gray-600" x-text="(sessionIndex + 1) + ' / ' + sessionCards.length"></span>
             </div>
 
             <template x-if="sessionCards.length > 0 && sessionIndex < sessionCards.length">
@@ -189,201 +196,265 @@
                     <div class="card-wrap group mb-8" :class="isFlipped ? 'flipped' : ''" @click="isFlipped = !isFlipped">
                         <div class="card-inner">
                             <div class="face front">
-                                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest absolute top-6">Question</span>
-                                <h3 class="text-xl md:text-2xl font-bold text-gray-800 px-4" x-text="sessionCards[sessionIndex].front"></h3>
-                                <span class="text-xs text-gray-300 absolute bottom-6">Tap to flip</span>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest absolute top-6" x-text="t('card_front')"></span>
+                                <h3 class="text-xl md:text-2xl font-bold text-gray-800 px-4 leading-relaxed" x-text="sessionCards[sessionIndex].front"></h3>
+                                <span class="text-xs text-gray-300 absolute bottom-6" x-text="t('tap_flip')"></span>
                             </div>
                             <div class="face back">
-                                <span class="text-xs font-bold text-indigo-300 uppercase tracking-widest absolute top-6">Answer</span>
-                                <p class="text-lg font-medium px-4 overflow-y-auto max-h-60" x-text="sessionCards[sessionIndex].back"></p>
+                                <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest absolute top-6" x-text="t('card_back')"></span>
+                                <div class="w-full overflow-y-auto max-h-[260px] px-2">
+                                    <p class="text-lg font-medium leading-relaxed" x-text="sessionCards[sessionIndex].back"></p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-3" x-show="isFlipped">
-                        <button @click="rate('hard')" class="py-3 bg-red-50 text-red-600 rounded-lg font-bold hover:bg-red-100">Hard (10m)</button>
-                        <button @click="rate('good')" class="py-3 bg-yellow-50 text-yellow-600 rounded-lg font-bold hover:bg-yellow-100">Good (1d)</button>
-                        <button @click="rate('easy')" class="py-3 bg-green-50 text-green-600 rounded-lg font-bold hover:bg-green-100">Easy (3d)</button>
+
+                    <div class="grid grid-cols-3 gap-3" x-show="isFlipped" x-transition.opacity>
+                        <button @click="rate('hard')" class="py-3 bg-red-50 text-red-600 rounded-lg font-bold border border-red-100 hover:bg-red-100 transition shadow-sm text-sm">
+                            <span x-text="t('rate_hard')"></span>
+                        </button>
+                        <button @click="rate('good')" class="py-3 bg-yellow-50 text-yellow-600 rounded-lg font-bold border border-yellow-100 hover:bg-yellow-100 transition shadow-sm text-sm">
+                            <span x-text="t('rate_good')"></span>
+                        </button>
+                        <button @click="rate('easy')" class="py-3 bg-green-50 text-green-600 rounded-lg font-bold border border-green-100 hover:bg-green-100 transition shadow-sm text-sm">
+                            <span x-text="t('rate_easy')"></span>
+                        </button>
                     </div>
                 </div>
             </template>
+
             <template x-if="sessionIndex >= sessionCards.length">
-                <div class="text-center mt-12">
-                    <div class="text-6xl mb-6">🎉</div>
-                    <h3 class="text-2xl font-bold mb-2">Session Complete!</h3>
-                    <button @click="view = 'dashboard'" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold">Back to Library</button>
+                <div class="text-center mt-12 animate-fade-in">
+                    <div class="text-6xl mb-6">🏆</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2" x-text="t('session_complete')"></h3>
+                    <p class="text-gray-500 mb-8 text-sm" x-text="t('session_desc')"></p>
+                    <button @click="view = 'dashboard'" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition" x-text="t('btn_home')"></button>
                 </div>
             </template>
         </div>
     </main>
 
     <script>
-        // Setup PDF.js Worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // 1. DICTIONARY OBJECT (Multi-language Data)
+        const i18n = {
+            en: {
+                nav_lib: "Library",
+                nav_schedule: "Schedule",
+                btn_new: "+ New Deck",
+                reset_tooltip: "Reset All Data",
+                lib_title: "Your Library",
+                lib_subtitle: "Manage your study materials",
+                empty_title: "No decks yet",
+                empty_desc: "Upload a document or enter a topic to start.",
+                empty_btn: "Create First Deck",
+                card_count: "cards",
+                status_due: "due",
+                status_done: "Done",
+                schedule_title: "Study Schedule",
+                due_today: "Due Today",
+                all_caught_up: "All caught up!",
+                btn_review: "Review",
+                btn_back: "Back",
+                create_title: "Create New Deck",
+                create_subtitle: "AI Generator from Topic or File",
+                api_placeholder: "Paste your Gemini API Key here...",
+                tab_topic: "By Topic",
+                tab_file: "Upload File",
+                topic_placeholder: "e.g., Supply Chain Management, IELTS Vocab...",
+                upload_label: "Click to Upload",
+                upload_ready: "Ready to analyze",
+                btn_generate: "Generate Flashcards",
+                btn_generating: "Analyzing...",
+                btn_exit: "Exit",
+                card_front: "Question",
+                card_back: "Answer",
+                tap_flip: "Tap card to flip",
+                rate_hard: "Hard (10m)",
+                rate_good: "Good (1d)",
+                rate_easy: "Easy (3d)",
+                session_complete: "Excellent Work!",
+                session_desc: "You've finished your reviews for now.",
+                btn_home: "Back to Library"
+            },
+            vi: {
+                nav_lib: "Thư viện",
+                nav_schedule: "Lịch ôn",
+                btn_new: "+ Tạo mới",
+                reset_tooltip: "Xóa toàn bộ dữ liệu",
+                lib_title: "Thư viện bài học",
+                lib_subtitle: "Quản lý các bộ thẻ ghi nhớ của bạn",
+                empty_title: "Chưa có bài nào",
+                empty_desc: "Tải tài liệu hoặc nhập chủ đề để bắt đầu.",
+                empty_btn: "Tạo bài đầu tiên",
+                card_count: "thẻ",
+                status_due: "cần ôn",
+                status_done: "Xong",
+                schedule_title: "Lịch ôn tập",
+                due_today: "Cần ôn hôm nay",
+                all_caught_up: "Bạn đã hoàn thành bài hôm nay!",
+                btn_review: "Học ngay",
+                btn_back: "Quay lại",
+                create_title: "Tạo bộ thẻ mới",
+                create_subtitle: "AI tạo từ Chủ đề hoặc Tài liệu",
+                api_placeholder: "Dán mã API Gemini vào đây...",
+                tab_topic: "Theo chủ đề",
+                tab_file: "Tải file lên",
+                topic_placeholder: "VD: Logistics, Lịch sử Việt Nam...",
+                upload_label: "Chọn tài liệu",
+                upload_ready: "Sẵn sàng phân tích",
+                btn_generate: "Tạo Flashcard",
+                btn_generating: "Đang phân tích...",
+                btn_exit: "Thoát",
+                card_front: "Câu hỏi",
+                card_back: "Đáp án",
+                tap_flip: "Chạm để lật",
+                rate_hard: "Khó (10p)",
+                rate_good: "Được (1 ngày)",
+                rate_easy: "Dễ (3 ngày)",
+                session_complete: "Xuất sắc!",
+                session_desc: "Bạn đã hoàn thành bài ôn tập này.",
+                btn_home: "Về trang chủ"
+            }
+        };
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('istuApp', () => ({
                 view: 'dashboard',
-                createMode: 'topic', // 'topic' or 'file'
+                lang: localStorage.getItem('istu_lang') || 'en', // Default Lang
+                createMode: 'topic',
                 decks: [],
                 apiKey: localStorage.getItem('istu_apikey') || '',
                 
-                // Form Data
                 inputTopic: '',
                 selectedFile: null,
-                extractedText: '',
-                
-                // State
                 loading: false,
                 statusMsg: '',
                 
-                // Study State
                 sessionCards: [],
                 sessionIndex: 0,
                 isFlipped: false,
                 currentDeckId: null,
 
                 init() {
-                    const saved = localStorage.getItem('istu_data_v2');
+                    const saved = localStorage.getItem('istu_data_v3');
                     if (saved) this.decks = JSON.parse(saved);
                     this.$watch('apiKey', (val) => localStorage.setItem('istu_apikey', val));
+                    this.$watch('lang', (val) => localStorage.setItem('istu_lang', val));
                 },
 
-                save() { localStorage.setItem('istu_data_v2', JSON.stringify(this.decks)); },
-
-                handleFileSelect(event) {
-                    this.selectedFile = event.target.files[0];
+                // Translation Helper
+                t(key) {
+                    return i18n[this.lang][key] || key;
                 },
+
+                toggleLang() {
+                    this.lang = this.lang === 'en' ? 'vi' : 'en';
+                },
+
+                save() { localStorage.setItem('istu_data_v3', JSON.stringify(this.decks)); },
+
+                handleFileSelect(event) { this.selectedFile = event.target.files[0]; },
 
                 async handleGenerate() {
-                    if (!this.apiKey) return alert("Please enter API Key!");
+                    if (!this.apiKey) return alert(this.lang === 'en' ? "Missing API Key" : "Thiếu API Key");
                     this.loading = true;
-                    this.statusMsg = "Initializing...";
+                    this.statusMsg = this.lang === 'en' ? "Initializing..." : "Đang khởi tạo...";
 
                     try {
                         let context = "";
                         let title = "";
 
-                        // 1. EXTRACT CONTEXT
                         if (this.createMode === 'file') {
-                            if (!this.selectedFile) throw new Error("No file selected");
-                            this.statusMsg = "Reading document...";
+                            if (!this.selectedFile) throw new Error("No file");
+                            this.statusMsg = this.lang === 'en' ? "Reading document..." : "Đang đọc tài liệu...";
                             title = this.selectedFile.name;
                             context = await this.extractTextFromFile(this.selectedFile);
                         } else {
-                            if (!this.inputTopic) throw new Error("No topic entered");
+                            if (!this.inputTopic) throw new Error("No topic");
                             title = this.inputTopic;
                             context = this.inputTopic;
                         }
 
-                        // 2. SEND TO AI
-                        this.statusMsg = "AI is analyzing & generating cards...";
-                        const cards = await window.generateFromGemini(context, this.apiKey, this.createMode === 'file');
+                        this.statusMsg = this.lang === 'en' ? "AI is thinking..." : "AI đang suy nghĩ...";
+                        // Pass current language to AI
+                        const cards = await window.generateFromGemini(context, this.apiKey, this.createMode === 'file', this.lang);
 
-                        // 3. SAVE DECK
                         const newDeck = {
                             id: Date.now(),
                             topic: title,
                             sourceType: this.createMode === 'file' ? 'File' : 'Topic',
                             createdAt: Date.now(),
-                            cards: cards.map(c => ({
-                                ...c,
-                                id: Math.random().toString(36).substr(2, 9),
-                                nextReview: Date.now()
-                            }))
+                            cards: cards.map(c => ({...c, id: Math.random().toString(36).substr(2, 9), nextReview: Date.now()}))
                         };
 
                         this.decks.unshift(newDeck);
                         this.save();
-                        
-                        // Reset Form
-                        this.inputTopic = '';
-                        this.selectedFile = null;
-                        this.extractedText = '';
-                        this.view = 'dashboard';
+                        this.inputTopic = ''; this.selectedFile = null; this.view = 'dashboard';
 
                     } catch (e) {
                         alert("Error: " + e.message);
-                        console.error(e);
                     } finally {
-                        this.loading = false;
-                        this.statusMsg = "";
+                        this.loading = false; this.statusMsg = "";
                     }
                 },
 
-                // FILE PARSING ENGINE
                 async extractTextFromFile(file) {
-                    const type = file.type;
-                    
-                    // PDF Handler
-                    if (type === 'application/pdf') {
-                        const arrayBuffer = await file.arrayBuffer();
-                        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-                        let fullText = "";
-                        // Limit to first 10 pages to avoid token limits
-                        const maxPages = Math.min(pdf.numPages, 10); 
-                        for (let i = 1; i <= maxPages; i++) {
+                    if (file.type === 'application/pdf') {
+                        const buffer = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument(buffer).promise;
+                        let text = "";
+                        for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
                             const page = await pdf.getPage(i);
-                            const textContent = await page.getTextContent();
-                            const pageText = textContent.items.map(item => item.str).join(' ');
-                            fullText += pageText + "\n";
+                            const content = await page.getTextContent();
+                            text += content.items.map(item => item.str).join(' ');
                         }
-                        return fullText;
-                    } 
-                    // Word (.docx) Handler
-                    else if (type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-                        const arrayBuffer = await file.arrayBuffer();
-                        const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-                        return result.value;
-                    }
-                    // Plain Text
-                    else {
+                        return text;
+                    } else if (file.type.includes('wordprocessingml')) {
+                        const buffer = await file.arrayBuffer();
+                        const res = await mammoth.extractRawText({ arrayBuffer: buffer });
+                        return res.value;
+                    } else {
                         return await file.text();
                     }
                 },
 
-                // DECK MANAGEMENT
                 deleteDeck(id) {
-                    if(confirm("Delete this deck permanently?")) {
+                    if(confirm(this.lang === 'en' ? "Delete deck?" : "Xóa bộ này?")) {
                         this.decks = this.decks.filter(d => d.id !== id);
                         this.save();
                     }
                 },
                 
                 clearData() {
-                    if(confirm("Wipe all data?")) {
-                        localStorage.removeItem('istu_data_v2');
+                    if(confirm(this.lang === 'en' ? "Wipe all data?" : "Xóa hết dữ liệu?")) {
+                        localStorage.removeItem('istu_data_v3');
                         location.reload();
                     }
                 },
 
-                // SCHEDULING LOGIC
                 getAllDueCards() {
                     const due = [];
                     const now = Date.now();
                     this.decks.forEach(deck => {
                         deck.cards.forEach(card => {
-                            if (card.nextReview <= now) {
-                                due.push({ card: card, deckTopic: deck.topic, deckId: deck.id });
-                            }
+                            if (card.nextReview <= now) due.push({ card: card, deckTopic: deck.topic, deckId: deck.id });
                         });
                     });
                     return due;
                 },
+                
+                getDueCount(deck) { return deck.cards.filter(c => c.nextReview <= Date.now()).length; },
 
-                getDueCount(deck) {
-                    return deck.cards.filter(c => c.nextReview <= Date.now()).length;
-                },
-
-                // STUDY LOGIC (Same as v1)
                 startSession(id) {
                     this.currentDeckId = id;
                     const deck = this.decks.find(d => d.id === id);
                     this.sessionCards = deck.cards.filter(c => c.nextReview <= Date.now());
-                    if(this.sessionCards.length === 0) return alert("No cards due!");
-                    this.sessionIndex = 0;
-                    this.isFlipped = false;
-                    this.view = 'study';
+                    if(this.sessionCards.length === 0) return alert(this.lang === 'en' ? "No cards due!" : "Chưa cần ôn bộ này!");
+                    this.sessionIndex = 0; this.isFlipped = false; this.view = 'study';
                 },
+                
                 rate(level) {
                     const cId = this.sessionCards[this.sessionIndex].id;
                     const deck = this.decks.find(d => d.id === this.currentDeckId);
@@ -401,28 +472,31 @@
     <script type="module">
         import { GoogleGenerativeAI } from "@google/generative-ai";
 
-        window.generateFromGemini = async (context, key, isFile) => {
+        window.generateFromGemini = async (context, key, isFile, lang) => {
             const genAI = new GoogleGenerativeAI(key);
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             
+            // DYNAMIC PROMPT BASED ON LANGUAGE
+            const targetLang = lang === 'en' ? "English" : "Vietnamese";
+            
             let prompt = "";
             if (isFile) {
-                // Shorten text to fit token limit approx
-                const safeContext = context.substring(0, 30000); 
-                prompt = `Analyze the following document text and extract 5-10 key concepts for flashcards.
+                const safeContext = context.substring(0, 25000); 
+                prompt = `Analyze this text and extract 5-10 key concepts for flashcards.
                 Text: "${safeContext}..."
-                Output strictly JSON Array: [{"front": "Question/Term", "back": "Answer/Definition"}].
-                Language: Vietnamese (Detect based on text). No markdown.`;
+                IMPORTANT: Output language must be ${targetLang}.
+                Output STRICTLY JSON Array: [{"front": "Question/Term", "back": "Answer/Definition"}].
+                No markdown.`;
             } else {
-                prompt = `Create 5 flashcards about topic: "${context}". 
-                Output strictly JSON Array: [{"front": "Question", "back": "Answer"}]. 
-                Language: Vietnamese. No markdown.`;
+                prompt = `Create 5 flashcards about: "${context}". 
+                IMPORTANT: Output language must be ${targetLang}.
+                Output STRICTLY JSON Array: [{"front": "Question", "back": "Answer"}]. 
+                No markdown.`;
             }
 
             const result = await model.generateContent(prompt);
             const text = result.response.text();
-            const jsonText = text.replace(/```json|```/g, "").trim();
-            return JSON.parse(jsonText);
+            return JSON.parse(text.replace(/```json|```/g, "").trim());
         }
     </script>
 </body>
